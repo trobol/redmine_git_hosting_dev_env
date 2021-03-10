@@ -1,0 +1,41 @@
+# Use root/example as user/password credentials
+#version: '3.1'
+version: '2'
+
+services:
+  postgresql:
+    image: 'postgres:11'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - POSTGRES_USER=redmine
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - './docker/postgresql1:/redmine/postgresql'
+  redmine:
+    image: redmine-gitolite:4.1.1-passenger
+    restart: always
+    ports:
+      - 3000:3000
+      - 3443:3443
+#      - 22:2222
+    expose:
+      - "3000"
+      - "3443"
+      - "2222"
+    volumes:
+        - ./docker/redmine/plugins:/usr/src/redmine/plugins
+        - ./docker/redmine/files:/usr/src/redmine/files
+        - ./docker/redmine/public/themes/phaenovum_new:/usr/src/redmine/public/themes/phaenovum_new
+        - ./docker/redmine/config/configuration.yml:/usr/src/redmine/config/configuration.yml
+        - ./docker/redmine/certs:/etc/ssl/redmine:ro
+        - ./docker/redmine/etc_ssh:/etc/ssh
+        - ./docker/redmine/ssh:/home/redmine/.ssh
+        - ./docker/redmine/gitolite:/home/git
+    environment:
+      - REDMINE_DB_POSTGRES=postgresql
+      - REDMINE_DB_USERNAME=redmine
+      - REDMINE_DB_PASSWORD=secret
+
+    depends_on:
+      - postgresql  
+    command: supervisord -c /etc/supervisor.conf

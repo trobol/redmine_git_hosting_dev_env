@@ -6,7 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     # gitolite dependencies
-    apt-get install -yq build-essential libssh2-1 libssh2-1-dev cmake libgpg-error-dev \
+    apt-get install -yq openssh-server build-essential libssh2-1 libssh2-1-dev cmake libgpg-error-dev \
     pkg-config gitolite3 sudo locales
 
 COPY sudoers.d.redmine /etc/sudoers.d/redmine
@@ -24,9 +24,12 @@ RUN apt-get -y install supervisor && \
 COPY supervisor.conf /etc/supervisor.conf
 COPY ssh.conf /etc/supervisor/conf.d/ssh.conf
 COPY passenger.conf /etc/supervisor/conf.d/passenger.conf
+COPY docker-configure.sh /sbin/docker-configure.sh
+RUN  chmod 755 /sbin/docker-configure.sh
 
 # sshd setup
 RUN mkdir /run/sshd
+
 # Set the locale
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     sed -i -e 's/# de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen && \
